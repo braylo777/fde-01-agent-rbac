@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security for AI agents."
-repository = "https://github.com/braylo-ai/fde-01-agent-rbac"
+repository = "https://github.com/braylo777/fde-01-agent-rbac"
 
 [lib]
 crate-type = ["rlib", "cdylib"]
