@@ -65,11 +65,11 @@ pub fn verify(
 ) -> Result<Value, String> {
     let c = decode(token, secret)?;
     let exp = c["exp"].as_u64().ok_or("missing exp")?;
-    if now > exp + SKEW_SECS {
+    if now > exp.saturating_add(SKEW_SECS) {
         return Err("token expired".into());
     }
     if let Some(nbf) = c["nbf"].as_u64() {
-        if now + SKEW_SECS < nbf {
+        if now.saturating_add(SKEW_SECS) < nbf {
             return Err("token not yet valid".into());
         }
     }
