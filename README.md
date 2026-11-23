@@ -4,7 +4,7 @@
 
 Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security, so an AI agent can only touch what its human is allowed to touch.
 
-**Live demo:** https://fde-01-agent-rbac.pages.dev — the Rust core runs in your browser as WebAssembly. No server, no tracking.
+**Live demo:** https://fde-01-agent-rbac.braylo777.workers.dev — the Rust core runs in your browser as WebAssembly. No server, no tracking.
 
 ## Why this matters
 
@@ -58,7 +58,7 @@ python3 -c 'import json;print(json.dumps(json.load(open("web/examples.json"))["o
 
 ```bash
 ./build.sh    # tests, then compiles the core to web/app.wasm
-./deploy.sh   # uploads web/ to Cloudflare Pages project "fde-01-agent-rbac" (needs a Cloudflare login)
+./deploy.sh   # serves web/ as a Cloudflare Workers static-assets site (needs a Cloudflare login)
 ```
 
 `web/` is a plain static site (`index.html`, `app.js`, `app.wasm`). It has no build step, so any static host works.
