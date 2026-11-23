@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Identity &amp; Agent RBAC · FDE Stage 1</title>
+<meta name="description" content="Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security, so an AI agent can only touch what its human is allowed to touch.">
+<style>
+:root { --bg:#fafaf7; --fg:#1b1b18; --mut:#6b6a63; --card:#fff; --line:#e4e2da; --acc:#2a5bd7; --ok:#1d7a46; --err:#b3261e; --code:#f3f2ee; }
+@media (prefers-color-scheme: dark) { :root { --bg:#141413; --fg:#ecebe6; --mut:#a09f98; --card:#1c1c1a; --line:#302f2b; --acc:#7ea2ff; --ok:#5fc58c; --err:#ff8a80; --code:#232320; } }
+* { box-sizing:border-box }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif }
+main { max-width:960px; margin:0 auto; padding:48px 20px 64px }
+.kicker { font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--acc) }
+h1 { font-size:clamp(28px,4vw,40px); line-height:1.15; margin:10px 0 8px; letter-spacing:-.01em }
+.lede { color:var(--mut); max-width:68ch; margin:0 0 28px }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px }
+[role=tablist] { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px }
+[role=tablist] button { font:inherit; font-size:14px; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--fg); cursor:pointer }
+[role=tablist] button[aria-selected=true] { background:var(--acc); border-color:var(--acc); color:#fff }
+#help { color:var(--mut); font-size:14px; margin:0 0 12px }
+.io { display:grid; grid-template-columns:1fr 1fr; gap:14px }
+@media (max-width:760px) { .io { grid-template-columns:1fr } }
+label { font-size:12px; font-weight:600; color:var(--mut); text-transform:uppercase; letter-spacing:.06em }
+textarea, pre { width:100%; min-height:340px; margin:6px 0 0; padding:12px; border-radius:8px; border:1px solid var(--line); background:var(--code); color:var(--fg); font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; overflow:auto; white-space:pre-wrap; word-break:break-word }
+textarea { resize:vertical }
+pre.ok { border-color:var(--ok) } pre.err { border-color:var(--err); color:var(--err) }
+.bar { display:flex; gap:8px; margin-top:12px }
+.bar button { font:inherit; font-weight:600; padding:8px 18px; border-radius:8px; border:1px solid var(--acc); background:var(--acc); color:#fff; cursor:pointer }
+.bar button.sec { background:transparent; color:var(--acc) }
+.bar button:disabled { opacity:.5; cursor:wait }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px }
+@media (max-width:760px) { .cols { grid-template-columns:1fr } }
+h2 { font-size:15px; margin:0 0 8px } ul { margin:0; padding-left:18px; font-size:14px } li { margin:3px 0 }
+footer { margin-top:28px; font-size:13px; color:var(--mut) } a { color:var(--acc) }
+</style>
+</head>
+<body>
+<main>
+<div class="kicker">Forward Deployed Engineering · Stage 1 of 12</div>
+<h1>Enterprise Identity &amp; Agent RBAC</h1>
+<p class="lede">Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security, so an AI agent can only touch what its human is allowed to touch. The logic below runs in your browser: it is the same Rust code as the repo, compiled to WebAssembly. Nothing is sent to a server.</p>
+<section class="card">
+<div id="tabs" role="tablist" aria-label="Operations"></div>
+<p id="help"></p>
+<div class="io">
+<div><label for="input">Input (JSON, editable)</label><textarea id="input" spellcheck="false"></textarea></div>
+<div><label for="output">Output</label><pre id="output" aria-live="polite">Loading…</pre></div>
+</div>
+<div class="bar"><button id="run" type="button" disabled>Run</button><button id="reset" class="sec" type="button">Reset example</button></div>
+</section>
+<div class="cols">
+<section class="card"><h2>What this repo covers</h2><ul><li>HS256 scoped JWTs for tool calls: audience, expiry, clock skew, alg=none and tamper refusal</li><li>Agent-to-human delegation (RFC 8693 style): scopes narrowed, act claim, TTL capped</li><li>SCIM 2.0 create / PATCH / deactivate / delete with group-to-role mapping</li><li>Row-level security: deny by default, claim-matched rows, column masking</li><li>OIDC ID-token claim checks: iss, aud/azp, exp, iat, nonce</li></ul></section>
+<section class="card"><h2>Not covered (honest gaps)</h2><ul><li>SAML assertion parsing and XML signature checks</li><li>RS256/ES256 signatures and JWKS key fetch (HS256 only here)</li><li>A real IdP (Okta / Entra) and a real Postgres RLS policy; the logic is the same, the wiring is not</li></ul></section>
+</div>
+<footer>Source, tests and CLI: <a href="https://github.com/braylo-ai/fde-01-agent-rbac">github.com/braylo-ai/fde-01-agent-rbac</a> · MIT license · Built by <a href="https://braylo.si">Braylo SI</a></footer>
+</main>
+<script type="application/json" id="cfg">{"stage": 1, "repo": "fde-01-agent-rbac", "title": "Enterprise Identity & Agent RBAC", "tagline": "Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security, so an AI agent can only touch what its human is allowed to touch.", "covers": ["HS256 scoped JWTs for tool calls: audience, expiry, clock skew, alg=none and tamper refusal", "Agent-to-human delegation (RFC 8693 style): scopes narrowed, act claim, TTL capped", "SCIM 2.0 create / PATCH / deactivate / delete with group-to-role mapping", "Row-level security: deny by default, claim-matched rows, column masking", "OIDC ID-token claim checks: iss, aud/azp, exp, iat, nonce"], "gaps": ["SAML assertion parsing and XML signature checks", "RS256/ES256 signatures and JWKS key fetch (HS256 only here)", "A real IdP (Okta / Entra) and a real Postgres RLS policy; the logic is the same, the wiring is not"], "ops": [{"op": "issue_token", "label": "Issue tool token", "help": "Mint a 5-minute token that lets one agent call two CRM tools. Scopes are the allow-list.", "input": {"now": 1767225600, "sub": "agent-sales-7", "aud": "crm-tools", "scopes": ["crm.read", "crm.note.write"], "secret": "demo-secret-use-a-vault-in-prod-32b", "ttl_secs": 300}}, {"op": "verify_token", "label": "Verify before tool call", "help": "The tool server checks the token before it runs. Change required_scope to crm.delete to see a refusal, or move now past expiry.", "input": {"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJjcm0tdG9vbHMiLCJleHAiOjE3NjcyMjU5MDAsImlhdCI6MTc2NzIyNTYwMCwiaXNzIjoiZmRlLWFnZW50LXJiYWMiLCJuYmYiOjE3NjcyMjU2MDAsInNjb3BlIjoiY3JtLnJlYWQgY3JtLm5vdGUud3JpdGUiLCJzdWIiOiJhZ2VudC1zYWxlcy03In0.j_i2BVVLKRtjTQHHrbnHums56s6bAykdwzkW4z8ZKYM", "secret": "demo-secret-use-a-vault-in-prod-32b", "aud": "crm-tools", "required_scope": "crm.read", "now": 1767225660}}, {"op": "delegate", "label": "Delegate human to agent", "help": "Alice's token is exchanged for a narrower agent token. Scopes = requested AND Alice's AND the agent's allow-list. The act claim records the agent.", "input": {"secret": "demo-secret-use-a-vault-in-prod-32b", "now": 1767225610, "subject_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhY21lLWlkcCIsImV4cCI6MTc2NzIyOTIwMCwiaWF0IjoxNzY3MjI1NjAwLCJpc3MiOiJmZGUtYWdlbnQtcmJhYyIsIm5iZiI6MTc2NzIyNTYwMCwic2NvcGUiOiJjcm0ucmVhZCBjcm0ud3JpdGUgZW1haWwuc2VuZCIsInN1YiI6ImFsaWNlQGFjbWUuY29tIn0.tjWNMg1YveB0VvKh0lS06cU0LfvTuWXcTuQIuvCrLqA", "agent_id": "agent-sales-7", "audience": "crm-tools", "requested_scopes": ["crm.read", "email.send", "hr.read"], "agent_allowed_scopes": ["crm.read", "hr.read"], "ttl_secs": 600}}, {"op": "scim_apply", "label": "SCIM provisioning", "help": "The IdP creates a user, adds a group, then deactivates them. Roles are recomputed after each request: a deactivated user has none.", "input": {"group_roles": {"Sales": ["crm.read", "crm.write"], "Finance": ["invoice.read"]}, "requests": [{"method": "POST", "body": {"userName": "bo@acme.com", "displayName": "Bo", "groups": [{"value": "Sales"}]}}, {"method": "POST", "body": {"userName": "cy@acme.com", "groups": ["Finance"]}}, {"method": "PATCH", "id": "u0001", "body": {"Operations": [{"op": "add", "path": "groups", "value": ["Finance"]}]}}, {"method": "PATCH", "id": "u0002", "body": {"Operations": [{"op": "replace", "value": {"active": false}}]}}]}}, {"op": "rls_filter", "label": "Row-level security", "help": "A finance agent asks for invoices. It sees only its own department's rows, with the IBAN masked.", "input": {"table": "invoices", "caller": {"sub": "agent-fin-2", "roles": ["finance-agent"], "dept": "sales"}, "mask_columns": ["iban"], "policies": [{"table": "invoices", "role": "finance-agent", "where": {"column": "dept", "equals_claim": "dept"}}, {"table": "invoices", "role": "cfo", "unmask": true}], "rows": [{"id": 101, "dept": "sales", "amount": 4200, "iban": "DE89 3704 0044 0532 0130 00"}, {"id": 102, "dept": "ops", "amount": 980, "iban": "FR14 2004 1010 0505 0001 3M02 606"}, {"id": 103, "dept": "sales", "amount": 15000, "iban": "GB29 NWBK 6016 1331 9268 19"}]}}, {"op": "oidc_validate", "label": "OIDC claim checks", "help": "Claim checks after the signature passes. This token has a wrong nonce (replay) and two audiences without azp.", "input": {"issuer": "https://login.acme.com", "client_id": "agent-console", "nonce": "n-82f1", "now": 1767225600, "claims": {"iss": "https://login.acme.com", "aud": ["agent-console", "reporting"], "sub": "alice", "exp": 1767226200, "iat": 1767225595, "nonce": "n-0000"}}}], "why": "When an AI agent acts inside a company, the first question from security is: who is it acting for, and what can it touch? This repo answers that with the same building blocks enterprises already use (SSO claims, SCIM, scoped tokens, row-level security), wired so the agent can never hold more access than the human it works for, and so access is removed the moment the IdP deactivates that human."}</script>
+<script src="app.js"></script>
+</body>
+</html>
