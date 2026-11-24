@@ -4,6 +4,8 @@
 
 Scoped tool tokens, delegated agent auth, SCIM provisioning and row-level security, so an AI agent can only touch what its human is allowed to touch.
 
+**Also built as Project 1 of 12, "Enterprise SSO & Agent Delegation Broker",** from the companion [12 FDE projects post](https://x.com/suraj_sharma14/status/2125197762752806998).
+
 **Live demo:** https://fde-01-agent-rbac.braylo777.workers.dev — the Rust core runs in your browser as WebAssembly. No server, no tracking.
 
 ## Why this matters
@@ -14,6 +16,7 @@ When an AI agent acts inside a company, the first question from security is: who
 
 - HS256 scoped JWTs for tool calls: audience, expiry, clock skew, alg=none and tamper refusal
 - Agent-to-human delegation (RFC 8693 style): scopes narrowed, act claim, TTL capped
+- Automatic revocation: a SCIM deactivate or delete kills every live agent token for that human; kill by jti or agent id too; verify_token honours the list
 - SCIM 2.0 create / PATCH / deactivate / delete with group-to-role mapping
 - Row-level security: deny by default, claim-matched rows, column masking
 - OIDC ID-token claim checks: iss, aud/azp, exp, iat, nonce
@@ -36,6 +39,7 @@ Every operation takes JSON in and gives JSON out. The CLI, the tests and the dem
 | `scim_apply` | The IdP creates a user, adds a group, then deactivates them. Roles are recomputed after each request: a deactivated user has none. |
 | `rls_filter` | A finance agent asks for invoices. It sees only its own department's rows, with the IBAN masked. |
 | `oidc_validate` | Claim checks after the signature passes. This token has a wrong nonce (replay) and two audiences without azp. |
+| `revoke` | Alice is deactivated in the IdP. Her agent's 5-minute token dies at once; Bob's agent keeps working. Also kills by jti or by agent id. |
 
 ## Run it
 
@@ -82,7 +86,7 @@ web/              demo page; examples.json drives both the page and this README
 
 ## Part of a series
 
-This is one of 12 repos that work through a public Forward Deployed Engineering roadmap ([source post](https://x.com/suraj_sharma14/status/2124827808535048566)). All 12: [github.com/braylo777?q=fde-](https://github.com/braylo777?tab=repositories&q=fde-).
+This is one of 12 repos that work through a public Forward Deployed Engineering roadmap ([12 stages](https://x.com/suraj_sharma14/status/2124827808535048566), [12 projects](https://x.com/suraj_sharma14/status/2125197762752806998)). All 12: [github.com/braylo777?q=fde-](https://github.com/braylo777?tab=repositories&q=fde-).
 
 ## License
 

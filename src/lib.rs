@@ -7,6 +7,7 @@
 //!   with group → role mapping.
 //! * `rls`   — row-level security: policies that filter rows by claims of the caller.
 //! * `oidc`  — OIDC ID-token claim checks (iss, aud, exp, nonce, iat skew).
+//! * `revoke` — automatic revocation: SCIM deactivation, jti and agent kills.
 //!
 //! Time is always passed in as `now` (unix seconds) so results are reproducible.
 
@@ -15,6 +16,7 @@ pub mod b64;
 pub mod delegate;
 pub mod jwt;
 pub mod oidc;
+pub mod revoke;
 pub mod rls;
 pub mod scim;
 
@@ -28,6 +30,7 @@ pub const OPS: &[&str] = &[
     "scim_apply",
     "rls_filter",
     "oidc_validate",
+    "revoke",
 ];
 
 pub(crate) fn field<'a>(v: &'a Value, k: &str) -> Result<&'a Value, String> {
@@ -48,6 +51,7 @@ pub fn handle(op: &str, input: &Value) -> Result<Value, String> {
         "scim_apply" => scim::apply_op(input),
         "rls_filter" => rls::filter_op(input),
         "oidc_validate" => oidc::validate_op(input),
+        "revoke" => revoke::revoke_op(input),
         _ => Err(format!("unknown op `{op}`; known: {}", OPS.join(", "))),
     }
 }

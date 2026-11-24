@@ -6,6 +6,7 @@
   "covers": [
     "HS256 scoped JWTs for tool calls: audience, expiry, clock skew, alg=none and tamper refusal",
     "Agent-to-human delegation (RFC 8693 style): scopes narrowed, act claim, TTL capped",
+    "Automatic revocation: a SCIM deactivate or delete kills every live agent token for that human; kill by jti or agent id too; verify_token honours the list",
     "SCIM 2.0 create / PATCH / deactivate / delete with group-to-role mapping",
     "Row-level security: deny by default, claim-matched rows, column masking",
     "OIDC ID-token claim checks: iss, aud/azp, exp, iat, nonce"
@@ -208,7 +209,61 @@
           "nonce": "n-0000"
         }
       }
+    },
+    {
+      "op": "revoke",
+      "label": "Auto-revoke on SCIM deactivate",
+      "help": "Alice is deactivated in the IdP. Her agent's 5-minute token dies at once; Bob's agent keeps working. Also kills by jti or by agent id.",
+      "input": {
+        "secret": "demo-secret-use-a-vault-in-prod-32b",
+        "now": 1767225660,
+        "directory": {
+          "u0001": {
+            "id": "u0001",
+            "userName": "alice@acme.com",
+            "active": false,
+            "groups": [
+              "Sales"
+            ],
+            "roles": []
+          },
+          "u0002": {
+            "id": "u0002",
+            "userName": "bob@acme.com",
+            "active": true,
+            "groups": [
+              "Sales"
+            ],
+            "roles": []
+          }
+        },
+        "tokens": [
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3QiOnsic3ViIjoiYWdlbnQtc2FsZXMtNyJ9LCJhdWQiOiJjcm0tdG9vbHMiLCJkZWxlZ2F0ZWQiOnRydWUsImV4cCI6MTc2NzIyNTkxMCwiaWF0IjoxNzY3MjI1NjEwLCJpc3MiOiJmZGUtYWdlbnQtcmJhYyIsImp0aSI6IjM2MmY0MDE4NzVkYzQxYzQiLCJuYmYiOjE3NjcyMjU2MTAsInNjb3BlIjoiY3JtLnJlYWQiLCJzdWIiOiJhbGljZUBhY21lLmNvbSJ9.s2WHmfzdEu1U0Gq8-UKHfcjtTH2rnjxhjZ5ODAqI47E",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3QiOnsic3ViIjoiYWdlbnQtc2FsZXMtNyJ9LCJhdWQiOiJjcm0tdG9vbHMiLCJkZWxlZ2F0ZWQiOnRydWUsImV4cCI6MTc2NzIyNTkxMCwiaWF0IjoxNzY3MjI1NjEwLCJpc3MiOiJmZGUtYWdlbnQtcmJhYyIsImp0aSI6Ijc0NWFkM2RjNTk1MTkyMWIiLCJuYmYiOjE3NjcyMjU2MTAsInNjb3BlIjoiY3JtLnJlYWQiLCJzdWIiOiJib2JAYWNtZS5jb20ifQ.VAH1fmmRCWTBpI3WVrWRQbbr6P4_yVL2nfqsIx3Omi4"
+        ]
+      }
+    },
+    {
+      "op": "verify_token",
+      "label": "Revoked token refused",
+      "help": "The tool server passes the current revocation list to verify_token. A valid, unexpired token for a deprovisioned human is refused.",
+      "input": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3QiOnsic3ViIjoiYWdlbnQtc2FsZXMtNyJ9LCJhdWQiOiJjcm0tdG9vbHMiLCJkZWxlZ2F0ZWQiOnRydWUsImV4cCI6MTc2NzIyNTkxMCwiaWF0IjoxNzY3MjI1NjEwLCJpc3MiOiJmZGUtYWdlbnQtcmJhYyIsImp0aSI6IjM2MmY0MDE4NzVkYzQxYzQiLCJuYmYiOjE3NjcyMjU2MTAsInNjb3BlIjoiY3JtLnJlYWQiLCJzdWIiOiJhbGljZUBhY21lLmNvbSJ9.s2WHmfzdEu1U0Gq8-UKHfcjtTH2rnjxhjZ5ODAqI47E",
+        "secret": "demo-secret-use-a-vault-in-prod-32b",
+        "aud": "crm-tools",
+        "required_scope": "crm.read",
+        "now": 1767225660,
+        "revocations": {
+          "subjects": [
+            "alice@acme.com"
+          ]
+        }
+      }
     }
   ],
-  "why": "When an AI agent acts inside a company, the first question from security is: who is it acting for, and what can it touch? This repo answers that with the same building blocks enterprises already use (SSO claims, SCIM, scoped tokens, row-level security), wired so the agent can never hold more access than the human it works for, and so access is removed the moment the IdP deactivates that human."
+  "why": "When an AI agent acts inside a company, the first question from security is: who is it acting for, and what can it touch? This repo answers that with the same building blocks enterprises already use (SSO claims, SCIM, scoped tokens, row-level security), wired so the agent can never hold more access than the human it works for, and so access is removed the moment the IdP deactivates that human.",
+  "project": {
+    "n": 1,
+    "title": "Enterprise SSO & Agent Delegation Broker"
+  }
 }

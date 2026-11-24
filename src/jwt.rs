@@ -118,7 +118,10 @@ pub fn issue_op(i: &Value) -> Result<Value, String> {
             claims.entry(k.clone()).or_insert(v.clone());
         }
     }
-    let claims = Value::Object(claims);
+    let mut claims = Value::Object(claims);
+    if claims.get("jti").is_none() {
+        claims["jti"] = json!(crate::revoke::jti_for(&claims));
+    }
     let token = encode(&claims, str_field(i, "secret")?)?;
     Ok(json!({"token": token, "claims": claims}))
 }
@@ -131,7 +134,14 @@ pub fn verify_op(i: &Value) -> Result<Value, String> {
         str_field(i, "required_scope")?,
         u64_field(i, "now")?,
     ) {
-        Ok(c) => Ok(json!({"allowed": true, "claims": c})),
+        Ok(c) => match i
+            .get("revocations")
+            .map(crate::revoke::Revocations::from_json)
+            .and_then(|r| r.check(&c))
+        {
+            Some(why) => Ok(json!({"allowed": false, "reason": why})),
+            None => Ok(json!({"allowed": true, "claims": c})),
+        },
         Err(e) => Ok(json!({"allowed": false, "reason": e})),
     }
 }

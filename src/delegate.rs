@@ -48,7 +48,7 @@ pub fn exchange_op(i: &Value) -> Result<Value, String> {
     }
     let want = i["ttl_secs"].as_u64().unwrap_or(MAX_DELEGATED_TTL);
     let ttl = want.min(MAX_DELEGATED_TTL).min(h_exp - now);
-    let claims = json!({
+    let mut claims = json!({
         "iss": "fde-agent-rbac",
         "sub": human["sub"],
         "aud": str_field(i, "audience")?,
@@ -57,6 +57,7 @@ pub fn exchange_op(i: &Value) -> Result<Value, String> {
         "act": {"sub": str_field(i, "agent_id")?},
         "delegated": true
     });
+    claims["jti"] = json!(crate::revoke::jti_for(&claims));
     Ok(
         json!({"issued": true, "token": jwt::encode(&claims, secret)?, "claims": claims, "denied": denied}),
     )
